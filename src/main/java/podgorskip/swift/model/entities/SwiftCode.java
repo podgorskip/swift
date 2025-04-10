@@ -1,10 +1,8 @@
 package podgorskip.swift.model.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,7 +32,13 @@ public class SwiftCode {
     @Column(name = "swift_code", nullable = false, unique = true)
     private String swiftCode;
 
-    @OneToMany
+    @OneToMany(mappedBy = "superiorUnit")
+    @EqualsAndHashCode.Exclude
+    @Builder.Default
+    private List<SwiftCode> branches = new ArrayList<>();
+
+    @ManyToOne
     @JoinColumn(name = "superior_unit")
-    private List<SwiftCode> branches;
+    @EqualsAndHashCode.Exclude
+    private SwiftCode superiorUnit;
 }
