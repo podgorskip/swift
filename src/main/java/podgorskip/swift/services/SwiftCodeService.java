@@ -1,11 +1,11 @@
 package podgorskip.swift.services;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 import podgorskip.swift.exceptions.ParsingException;
+import podgorskip.swift.exceptions.SwiftCodeException;
 import podgorskip.swift.model.dto.SwiftCodeRequest;
 import podgorskip.swift.model.entities.SwiftCode;
 import podgorskip.swift.model.mappers.SwiftCodeMapper;
@@ -13,7 +13,6 @@ import podgorskip.swift.respositories.SwiftCodeRepository;
 import podgorskip.swift.utils.parser.FileParser;
 import podgorskip.swift.utils.parser.impl.CsvFileParser;
 import podgorskip.swift.utils.parser.impl.XlsxFileParser;
-
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -21,6 +20,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SwiftCodeService {
     private final SwiftCodeRepository swiftCodeRepository;
+    private final RedisCacheService redisCacheService;
 
     @Transactional
     public SwiftCode createSwiftCode(SwiftCodeRequest request) {
@@ -36,8 +36,17 @@ public class SwiftCodeService {
         String headquarterSwiftCode = swiftCode.getSwiftCode().substring(0, 8) + "XXX";
         swiftCodeRepository.findBySwiftCode(headquarterSwiftCode).ifPresent(swiftCode::setSuperiorUnit);
 
-        return swiftCodeRepository.save(swiftCode);
+        SwiftCode persistedSwiftCode = swiftCodeRepository.save(swiftCode);
+        redisCacheService.save(persistedSwiftCode.getSwiftCode(), persistedSwiftCode);
+        return persistedSwiftCode;
     }
+
+    public SwiftCode getSwiftCode(String code) {
+        return redisCacheService.get(code)
+                .orElseGet(() -> swiftCodeRepository.findBySwiftCode(code)
+                        .orElseThrow(() -> new SwiftCodeException("Swift code not found: " + code)));
+    }
+
 
     public void transferSwiftCodes(String filePath) {
         FileParser fileParser;
@@ -71,10 +80,13 @@ public class SwiftCodeService {
             }
 
             swiftCodeRepository.saveAll(persistentSwiftCodes.values());
+
+            persistentSwiftCodes.values().forEach(persistentSwiftCode ->
+                redisCacheService.save(persistentSwiftCode.getSwiftCode(), persistentSwiftCode)
+            );
+
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            throw new ParsingException("Error parsing file: " + filePath + ": " + e.getMessage());
         }
-
-
     }
 }
