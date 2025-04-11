@@ -52,6 +52,7 @@ public class CsvFileParser implements FileParser {
             while ((line = reader.readLine()) != null) {
                 String[] fields = line.split(separator, -1);
 
+                String address = fields[columnMap.get(Column.ADDRESS.getHeader())].trim();
                 String bankName = fields[columnMap.get(Column.NAME.getHeader())].trim();
                 String countryISO2 = fields[columnMap.get(Column.COUNTRY_ISO2.getHeader())].trim().toUpperCase();
                 String countryName = fields[columnMap.get(Column.COUNTRY_NAME.getHeader())].trim().toUpperCase();
@@ -59,6 +60,7 @@ public class CsvFileParser implements FileParser {
                 boolean isHeadquarter = swiftCode.endsWith("XXX");
 
                 SwiftCodeRequest swiftCodeRequest = SwiftCodeRequest.builder()
+                        .address(address)
                         .bankName(bankName)
                         .countryISO2(countryISO2)
                         .countryName(countryName)

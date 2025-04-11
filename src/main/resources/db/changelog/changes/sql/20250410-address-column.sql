@@ -1,0 +1,1 @@
+ALTER TABLE swift_code ADD COLUMN IF NOT EXISTS address TEXT;

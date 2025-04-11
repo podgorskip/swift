@@ -52,6 +52,7 @@ public class XlsxFileParser implements FileParser {
                 Row row = sheet.getRow(i);
                 if (row == null) continue;
 
+                String address = getCellValue(row, columnMap.get(Column.ADDRESS.getHeader()));
                 String bankName = getCellValue(row, columnMap.get(Column.NAME.getHeader()));
                 String countryISO2 = getCellValue(row, columnMap.get(Column.COUNTRY_ISO2.getHeader())).toUpperCase();
                 String countryName = getCellValue(row, columnMap.get(Column.COUNTRY_NAME.getHeader())).toUpperCase();
@@ -59,6 +60,7 @@ public class XlsxFileParser implements FileParser {
                 boolean isHeadquarter = swiftCode.endsWith("XXX");
 
                 SwiftCodeRequest swiftCodeRequest = SwiftCodeRequest.builder()
+                        .address(address)
                         .bankName(bankName)
                         .countryISO2(countryISO2)
                         .countryName(countryName)

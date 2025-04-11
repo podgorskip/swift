@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2
+      author: podgorskip
+      onValidationFail: MARK_RAN
+      preConditions:
+        - tableExists:
+            tableName: swift_code
+      changes:
+        - sqlFile:
+            path: sql/20250410-address-column.sql
+            relativeToChangelogFile: true

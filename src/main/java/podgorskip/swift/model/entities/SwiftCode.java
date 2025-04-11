@@ -1,5 +1,7 @@
 package podgorskip.swift.model.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.ArrayList;
@@ -32,13 +34,20 @@ public class SwiftCode {
     @Column(name = "swift_code", nullable = false, unique = true)
     private String swiftCode;
 
-    @OneToMany(mappedBy = "superiorUnit")
+    @Column(name = "address", nullable = false)
+    private String address;
+
+    @OneToMany(mappedBy = "superiorUnit", fetch = FetchType.EAGER)
+    @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @Builder.Default
+    @JsonManagedReference
     private List<SwiftCode> branches = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "superior_unit")
+    @ToString.Exclude
     @EqualsAndHashCode.Exclude
+    @JsonBackReference
     private SwiftCode superiorUnit;
 }
