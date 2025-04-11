@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import podgorskip.swift.exceptions.ParsingException;
 import podgorskip.swift.model.dto.SwiftCodeRequest;
@@ -76,7 +77,7 @@ public class CsvFileParser implements FileParser {
                 }
             }
         } catch (IOException e) {
-            throw new ParsingException("Failed to read CSV file: " + e);
+            throw new ParsingException("Failed to read CSV file.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return Pair.of(swiftCodeMap, relationMap);

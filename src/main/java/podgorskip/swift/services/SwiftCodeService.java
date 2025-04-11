@@ -3,6 +3,7 @@ package podgorskip.swift.services;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import podgorskip.swift.exceptions.ParsingException;
 import podgorskip.swift.exceptions.SwiftCodeException;
@@ -23,9 +24,10 @@ public class SwiftCodeService {
     private final RedisCacheService redisCacheService;
 
     @Transactional
-    public SwiftCode createSwiftCode(SwiftCodeRequest request) {
+    public UUID createSwiftCode(SwiftCodeRequest request) {
 
         SwiftCode swiftCode = SwiftCode.builder()
+                .address(request.getAddress())
                 .bankName(request.getBankName())
                 .countryISO2(request.getCountryISO2())
                 .countryName(request.getCountryName())
@@ -39,19 +41,20 @@ public class SwiftCodeService {
         SwiftCode persistedSwiftCode = swiftCodeRepository.save(swiftCode);
         redisCacheService.save(persistedSwiftCode.getSwiftCode(), persistedSwiftCode);
         redisCacheService.addToSet(persistedSwiftCode.getCountryISO2(), persistedSwiftCode.getSwiftCode());
-        return persistedSwiftCode;
+        return persistedSwiftCode.getId();
     }
 
     public SwiftCode getSwiftCode(String code) {
         return redisCacheService.get(code)
                 .orElseGet(() -> swiftCodeRepository.findBySwiftCode(code)
-                        .orElseThrow(() -> new SwiftCodeException("Swift code not found: " + code)));
+                        .orElseThrow(() -> new SwiftCodeException(
+                                "Swift code not found, code=" + code,
+                                HttpStatus.NOT_FOUND)
+                        ));
     }
 
     public List<SwiftCode> getSwiftCodes(String countryISO2) {
         Set<String> swiftCodesCache = redisCacheService.getSet(countryISO2);
-
-        System.out.println(swiftCodesCache);
 
         if (swiftCodesCache != null && !swiftCodesCache.isEmpty()) {
             return swiftCodesCache.stream()
@@ -78,7 +81,7 @@ public class SwiftCodeService {
         switch (extension) {
             case "csv" -> fileParser = new CsvFileParser();
             case "xlsx" -> fileParser = new XlsxFileParser();
-            default -> throw new ParsingException("Unsupported extension: " + extension);
+            default -> throw new ParsingException("Unsupported extension: " + extension, HttpStatus.BAD_REQUEST);
         }
 
         try {
@@ -112,8 +115,29 @@ public class SwiftCodeService {
                 redisCacheService.addToSet(persistentSwiftCode.getCountryISO2(), persistentSwiftCode.getSwiftCode());
             });
 
-        } catch (Exception e) {
-            throw new ParsingException("Error parsing file: " + filePath + ": " + e.getMessage());
+        } catch (ParsingException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new ParsingException(
+                    String.format("Error parsing file, filename=%s, error=%s", filePath, exception.getMessage()),
+                    HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
+    }
+
+    public void removeAllSwiftCodes() {
+        swiftCodeRepository.deleteAll();
+    }
+
+    public UUID removeSwiftCode(String code) {
+        return swiftCodeRepository.findBySwiftCode(code)
+                .map(swiftCode -> {
+                    swiftCodeRepository.delete(swiftCode);
+                    return swiftCode.getId();
+                })
+                .orElseThrow(() -> new SwiftCodeException(
+                        String.format("Swift code not found, code=%s", code),
+                        HttpStatus.NOT_FOUND
+                ));
     }
 }

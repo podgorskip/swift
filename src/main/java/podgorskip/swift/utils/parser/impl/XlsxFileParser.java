@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import podgorskip.swift.exceptions.ParsingException;
 import podgorskip.swift.model.dto.SwiftCodeRequest;
@@ -76,7 +77,7 @@ public class XlsxFileParser implements FileParser {
                 }
             }
         } catch (IOException e) {
-            throw new ParsingException("Failed to read XLSX file: " + e);
+            throw new ParsingException("Failed to read XLSX file.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return Pair.of(swiftCodeMap, relationMap);

@@ -24,7 +24,7 @@ public class RedisCacheService {
 
     public Optional<SwiftCode> get(String key) {
         SwiftCode value = swiftCodeCache.opsForValue().get(key);
-        return Optional.of(value);
+        return Optional.ofNullable(value);
     }
 
     public boolean exists(String key) {
