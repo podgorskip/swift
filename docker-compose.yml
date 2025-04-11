@@ -31,7 +31,7 @@ services:
     build: .
     container_name: swift_app
     ports:
-      - "8080:8080"
+      - "8081:8080"
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - DATABASE_USERNAME=${DATABASE_USERNAME}
@@ -40,6 +40,27 @@ services:
       - postgres
       - redis
     restart: unless-stopped
+    networks:
+      - swift_network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 10s
+      retries: 5
+      start_period: 60s
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yaml
+    networks:
+      - swift_network
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
     networks:
       - swift_network
 

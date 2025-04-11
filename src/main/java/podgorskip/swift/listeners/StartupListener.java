@@ -26,9 +26,7 @@ public class StartupListener {
     }
 
     private void transferSwiftCodes() throws IOException {
-        Resource resource = resourceLoader.getResource("classpath:spreadsheets/swift_codes.xlsx");
-        File file = resource.getFile();
-
+        File file = new File("/app/spreadsheets/swift_codes.xlsx");
         swiftCodeService.transferSwiftCodes(file.getAbsolutePath());
     }
 }
