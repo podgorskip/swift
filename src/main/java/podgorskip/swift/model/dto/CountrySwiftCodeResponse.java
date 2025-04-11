@@ -4,16 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.List;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SwiftCodeRequest {
-    private String address;
-    private String bankName;
+public class CountrySwiftCodeResponse {
     private String countryISO2;
     private String countryName;
-    private Boolean isHeadquarter;
-    private String swiftCode;
+    private List<SwiftCodeResponse> swiftCodes;
 }

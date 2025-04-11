@@ -12,11 +12,20 @@ import podgorskip.swift.model.entities.SwiftCode;
 public class RedisConfig {
 
     @Bean
-    public RedisTemplate<String, SwiftCode> redisTemplate(RedisConnectionFactory connectionFactory) {
+    public RedisTemplate<String, SwiftCode> swiftCodeCache(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, SwiftCode> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(new Jackson2JsonRedisSerializer<>(SwiftCode.class));
+        return template;
+    }
+
+    @Bean
+    public RedisTemplate<String, String> countryISO2Cache(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, String> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new Jackson2JsonRedisSerializer<>(String.class));
         return template;
     }
 }
