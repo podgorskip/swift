@@ -2,6 +2,7 @@ package podgorskip.swift.services;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import podgorskip.swift.utils.parser.impl.XlsxFileParser;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SwiftCodeService {
@@ -25,7 +27,6 @@ public class SwiftCodeService {
 
     @Transactional
     public UUID createSwiftCode(SwiftCodeRequest request) {
-
         SwiftCode swiftCode = SwiftCode.builder()
                 .address(request.getAddress())
                 .bankName(request.getBankName())
@@ -36,7 +37,12 @@ public class SwiftCodeService {
                 .build();
 
         String headquarterSwiftCode = swiftCode.getSwiftCode().substring(0, 8) + "XXX";
-        swiftCodeRepository.findBySwiftCode(headquarterSwiftCode).ifPresent(swiftCode::setSuperiorUnit);
+        swiftCodeRepository.findBySwiftCode(headquarterSwiftCode).ifPresent(headquarter -> {
+            headquarter.getBranches().add(swiftCode);
+            swiftCode.setSuperiorUnit(headquarter);
+            redisCacheService.save(headquarter.getSwiftCode(), headquarter);
+            redisCacheService.addToSet(headquarter.getCountryISO2(), headquarter.getSwiftCode());
+        });
 
         SwiftCode persistedSwiftCode = swiftCodeRepository.save(swiftCode);
         redisCacheService.save(persistedSwiftCode.getSwiftCode(), persistedSwiftCode);
@@ -133,6 +139,16 @@ public class SwiftCodeService {
         return swiftCodeRepository.findBySwiftCode(code)
                 .map(swiftCode -> {
                     swiftCodeRepository.delete(swiftCode);
+                    redisCacheService.delete(code);
+
+                    SwiftCode headquarter = swiftCode.getSuperiorUnit();
+                    if (headquarter != null) {
+                        headquarter.getBranches().remove(swiftCode);
+                        redisCacheService.save(headquarter.getSwiftCode(), headquarter);
+                    }
+
+                    redisCacheService.deleteFromSet(swiftCode.getCountryISO2(), code);
+
                     return swiftCode.getId();
                 })
                 .orElseThrow(() -> new SwiftCodeException(

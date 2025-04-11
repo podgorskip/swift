@@ -42,4 +42,13 @@ public class RedisCacheService {
     public void addToSet(String key, String value) {
         countryISO2Cache.opsForSet().add(key, value);
     }
+
+    public void deleteFromSet(String key, String value) {
+        countryISO2Cache.opsForSet().remove(key, value);
+    }
+
+    public void clearCaches() {
+        swiftCodeCache.getConnectionFactory().getConnection().serverCommands().flushAll();
+        countryISO2Cache.getConnectionFactory().getConnection().serverCommands().flushAll();
+    }
 }
