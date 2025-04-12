@@ -27,11 +27,16 @@ public class SwiftCodeService {
 
     @Transactional
     public UUID createSwiftCode(SwiftCodeRequest request) {
+        swiftCodeRepository.findBySwiftCode(request.getSwiftCode())
+                .ifPresent(swiftCode -> {
+                    throw new SwiftCodeException("Swift code is already present", HttpStatus.CONFLICT);
+                });
+
         SwiftCode swiftCode = SwiftCode.builder()
                 .address(request.getAddress())
                 .bankName(request.getBankName())
-                .countryISO2(request.getCountryISO2())
-                .countryName(request.getCountryName())
+                .countryISO2(request.getCountryISO2().toUpperCase())
+                .countryName(request.getCountryName().toUpperCase())
                 .isHeadquarter(request.getIsHeadquarter() != null ? request.getIsHeadquarter() : false)
                 .swiftCode(request.getSwiftCode())
                 .build();

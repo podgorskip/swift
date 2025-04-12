@@ -29,7 +29,7 @@ services:
     build: .
     container_name: swift_app
     ports:
-      - "8081:8080"
+      - "8080:8080"
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - DATABASE_USERNAME=${DATABASE_USERNAME}

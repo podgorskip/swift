@@ -55,18 +55,6 @@ public class SwiftApplicationTest {
         registry.add("spring.liquibase.password", postgres::getPassword);
     }
 
-    @BeforeAll
-    static void init() {
-        postgres.start();
-        redis.start();
-    }
-
-    @AfterAll
-    static void cleanup() {
-        postgres.stop();
-        redis.stop();
-    }
-
     @Autowired
     private TestRestTemplate restTemplate;
 
@@ -81,7 +69,7 @@ public class SwiftApplicationTest {
                         .swiftCode("HEADABCDXXX")
                         .build();
 
-        ResponseEntity<String> response = restTemplate.postForEntity("/swift-codes", request, String.class);
+        ResponseEntity<String> response = restTemplate.postForEntity("/v1/swift-codes", request, String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody()).contains("Successfully created swift code");
@@ -98,7 +86,7 @@ public class SwiftApplicationTest {
                 .swiftCode("SPMLPLP1KKK")
                 .build();
 
-        ResponseEntity<String> response = restTemplate.postForEntity("/swift-codes", request, String.class);
+        ResponseEntity<String> response = restTemplate.postForEntity("/v1/swift-codes", request, String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody()).contains("Successfully created swift code");
@@ -108,7 +96,7 @@ public class SwiftApplicationTest {
     public void testGetSwiftCode_HasBranch() {
         String swiftCode = "SPMLPLP1XXX";
 
-        ResponseEntity<String> response = restTemplate.getForEntity("/swift-codes/{code}", String.class, swiftCode);
+        ResponseEntity<String> response = restTemplate.getForEntity("/v1/swift-codes/{code}", String.class, swiftCode);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).contains("branches");
@@ -118,7 +106,7 @@ public class SwiftApplicationTest {
     public void testGetSwiftCode_NotFound() {
         String swiftCode = "GGGGGGGGGGG";
 
-        ResponseEntity<String> response = restTemplate.getForEntity("/swift-codes/{code}", String.class, swiftCode);
+        ResponseEntity<String> response = restTemplate.getForEntity("/v1/swift-codes/{code}", String.class, swiftCode);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
@@ -128,14 +116,14 @@ public class SwiftApplicationTest {
         String swiftCode = "SPMLPLP1KKK";
 
         ResponseEntity<String> deleteResponse = restTemplate.exchange(
-                "/swift-codes/{code}",
+                "/v1/swift-codes/{code}",
                 HttpMethod.DELETE,
                 null,
                 String.class,
                 swiftCode
         );
 
-        ResponseEntity<String> getResponse = restTemplate.getForEntity("/swift-codes/{code}", String.class, swiftCode);
+        ResponseEntity<String> getResponse = restTemplate.getForEntity("/v1/swift-codes/{code}", String.class, swiftCode);
 
         assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(deleteResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -146,7 +134,7 @@ public class SwiftApplicationTest {
         String swiftCode = "GGGGGGGGGGG";
 
         ResponseEntity<String> response = restTemplate.exchange(
-                "/swift-codes/{code}",
+                "/v1/swift-codes/{code}",
                 HttpMethod.DELETE,
                 null,
                 String.class,
@@ -160,7 +148,7 @@ public class SwiftApplicationTest {
     public void testGetCountrySwiftCodes() {
         String country = "PL";
 
-        ResponseEntity<String> response = restTemplate.getForEntity("/swift-codes/country/{country}", String.class, country);
+        ResponseEntity<String> response = restTemplate.getForEntity("/v1/swift-codes/country/{country}", String.class, country);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
