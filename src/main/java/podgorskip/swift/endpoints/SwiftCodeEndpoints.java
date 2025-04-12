@@ -1,5 +1,6 @@
 package podgorskip.swift.endpoints;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import podgorskip.swift.model.dto.CountrySwiftCodeResponse;
@@ -16,7 +17,7 @@ public interface SwiftCodeEndpoints {
     ResponseEntity<CountrySwiftCodeResponse> getCountrySwiftCodes(@PathVariable("country") String country);
 
     @PostMapping
-    ResponseEntity<String> addSwiftCode(@RequestBody SwiftCodeRequest request);
+    ResponseEntity<String> addSwiftCode(@Valid @RequestBody SwiftCodeRequest request);
 
     @DeleteMapping("/{code}")
     ResponseEntity<String> deleteSwiftCode(@PathVariable("code") String code);

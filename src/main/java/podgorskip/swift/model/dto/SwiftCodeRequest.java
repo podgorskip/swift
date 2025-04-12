@@ -1,5 +1,7 @@
 package podgorskip.swift.model.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,10 +12,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SwiftCodeRequest {
-    private String address;
-    private String bankName;
-    private String countryISO2;
-    private String countryName;
-    private Boolean isHeadquarter;
-    private String swiftCode;
+    @NotNull @NotBlank private String address;
+    @NotNull @NotBlank private String bankName;
+    @NotNull @NotBlank private String countryISO2;
+    @NotNull @NotBlank private String countryName;
+    @NotNull private Boolean isHeadquarter;
+    @NotNull @NotBlank private String swiftCode;
 }

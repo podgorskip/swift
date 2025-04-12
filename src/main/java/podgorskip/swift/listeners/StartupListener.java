@@ -1,6 +1,7 @@
 package podgorskip.swift.listeners;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.io.Resource;
@@ -14,7 +15,9 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class StartupListener {
     private final SwiftCodeService swiftCodeService;
-    private final ResourceLoader resourceLoader;
+
+    @Value("${spreadsheet.path}")
+    private String spreadSheetPath;
 
     @EventListener
     public void onApplicationEvent(ApplicationReadyEvent event) {
@@ -26,7 +29,7 @@ public class StartupListener {
     }
 
     private void transferSwiftCodes() throws IOException {
-        File file = new File("/app/spreadsheets/swift_codes.xlsx");
+        File file = new File(spreadSheetPath);
         swiftCodeService.transferSwiftCodes(file.getAbsolutePath());
     }
 }

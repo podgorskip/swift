@@ -18,17 +18,9 @@ public class RedisCacheService {
         swiftCodeCache.opsForValue().set(key, value);
     }
 
-    public void saveWithTTL(String key, SwiftCode value, long ttlInSeconds) {
-        swiftCodeCache.opsForValue().set(key, value, ttlInSeconds, TimeUnit.SECONDS);
-    }
-
     public Optional<SwiftCode> get(String key) {
         SwiftCode value = swiftCodeCache.opsForValue().get(key);
         return Optional.ofNullable(value);
-    }
-
-    public boolean exists(String key) {
-        return swiftCodeCache.hasKey(key);
     }
 
     public void delete(String key) {

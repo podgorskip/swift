@@ -77,7 +77,7 @@ public class XlsxFileParser implements FileParser {
                 }
             }
         } catch (IOException e) {
-            throw new ParsingException("Failed to read XLSX file.", HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new ParsingException("Failed to read XLSX file, err=" + e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return Pair.of(swiftCodeMap, relationMap);
